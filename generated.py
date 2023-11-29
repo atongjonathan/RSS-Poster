@@ -29,7 +29,10 @@ infinity = True
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_TOKEN = "5954527089:AAHQJGcyGaI_MfT6DsoEgmKicfjBujizCbA"
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 
 class TelegramBot:
     def __init__(self, token):
@@ -48,6 +51,7 @@ class TelegramBot:
         except Exception as e:
             logging.error(f"Error editing message: {e}")
 
+
 def get_domain_from_url(url):
     try:
         domain = url.split("//")[1].split("/")[0].replace(".com", "")
@@ -55,6 +59,7 @@ def get_domain_from_url(url):
     except Exception as e:
         logging.error(f"Error extracting domain from {url}: {e}")
         return None
+
 
 def send_citizen_data(entry):
     html_content = entry["html_content"]
@@ -70,7 +75,7 @@ def send_citizen_data(entry):
         author = "None"
     author_text = ""
     if author != "None":
-        author_text = f"<i>Article written by <a href='mailto:{email}'>{author}</a></i>" 
+        author_text = f"<i>Article written by <a href='mailto:{email}'>{author}</a></i>"
     soup = BeautifulSoup(html_content, "html.parser")
     p = soup.find_all("p")
     div = soup.find_all("div")
@@ -85,16 +90,16 @@ def send_citizen_data(entry):
 
         if spans:
             for span in spans:
-                content_text += '\nStart-span\n'+ span.text + '\nEnd-start\n'
-        else:            
-            content_text += '\n' +paragraph.text.strip().replace("\n", " ") +'\n'
-    if content_text=="":
-        for paragraph in div:            
+                content_text += '\nStart-span\n' + span.text + '\nEnd-start\n'
+        else:
+            content_text += '\n' + paragraph.text.strip().replace("\n", " ") + '\n'
+    if content_text == "":
+        for paragraph in div:
             img_tag = soup.find('img')
             img_src = img_tag['src'] if img_tag else None
             caption = soup.find('figcaption').text
             date = soup.find("pubDate")
-            author = soup.find("author")        
+            author = soup.find("author")
             content_text += paragraph.text
 
     try:
@@ -102,11 +107,12 @@ def send_citizen_data(entry):
     except UnboundLocalError:
         message = f"<a href='{link}'><b>{title}</b></a>\n{content_text}"
         print(f"No link found for {title}")
-    except:
+    except BaseException:
         pass
     finally:
         processed_urls.add(link)
     return message
+
 
 def billboard(entry):
     link = entry["link"]
@@ -116,9 +122,10 @@ def billboard(entry):
     summary = entry["summary"]
     author = entry["author"]
     tags = ', '.join(entry["tags"])
-    summary = summary.replace("<p>","").replace("</p>","")
+    summary = summary.replace("<p>", "").replace("</p>", "")
     message = f"<a href='{link}'><b>{title}</b></a>\n\n{summary}\n{tags}\n\n<i>Article written by <b>{author}</b>\nPublished on {date}</i>"
     return message
+
 
 def update_files(path, link):
     try:
@@ -136,6 +143,7 @@ def update_files(path, link):
         logging.error(f"Error updating files: {e}")
         return False
 
+
 def extract_data(feed_url, domain):
     try:
         feed = feedparser.parse(feed_url)
@@ -148,7 +156,7 @@ def extract_data(feed_url, domain):
                     "link": entry.link,
                     "date": entry.published,
                     "author": entry
-                }            
+                }
                 for entry in entries
             ]
             return data
@@ -163,17 +171,19 @@ def extract_data(feed_url, domain):
                     "tags": [f'#{tag["term"].replace(" ","")}' for tag in entry.tags]
                 }
                 for entry in entries
-            ]          
+            ]
             return data
     except Exception as e:
         logging.error(f"Error extracting data from {feed_url}: {e}")
         return []
+
 
 def send_data(entries, func, domain, chat_id, bot_instance):
     for entry in entries:
         message = func(entry)
         if update_files(f"./{domain}.txt", entry["link"]):
             bot_instance.send_message(chat_id, message)
+
 
 def to_update(bot_instance):
     for (key, value) in items.items():
@@ -186,6 +196,7 @@ def to_update(bot_instance):
         except Exception as e:
             logging.error(f"Error getting data for {domain}: {e}")
         send_data(data, func, domain, chat_id, bot_instance)
+
 
 def polling_thread(bot_instance):
     while not stop_polling_event.is_set():
@@ -203,11 +214,13 @@ if __name__ == "__main__":
         global infinity
         infinity = True
         bot.send_message(message.chat.id, "Infinity started")
+
     @bot.message_handler(commands=["stop"])
     def update(message=None):
         global infinity
         infinity = False
-        bot.send_message(message.chat.id, "Infinity stoped")       
+        bot.send_message(message.chat.id, "Infinity stoped")
+
     @bot.message_handler(commands=["update"])
     def update(message=None):
         if message is not None:
@@ -215,10 +228,13 @@ if __name__ == "__main__":
             print("Command")
             to_update()
             global links
-            bot.edit_message_text(f"Completed, Links sent: {links} ",message.chat.id,message.id)
+            bot.edit_message_text(
+                f"Completed, Links sent: {links} ",
+                message.chat.id,
+                message.id)
         else:
             print("Auto")
-            bot.send_message(1095126805,f"Completed, Links sent: {links} ")
+            bot.send_message(1095126805, f"Completed, Links sent: {links} ")
     try:
         bot_instance = TelegramBot(TELEGRAM_BOT_TOKEN)
         items = {
@@ -232,9 +248,9 @@ if __name__ == "__main__":
 
         stop_polling_event = threading.Event()
 
-
         logging.info("Bot is online")
-        polling_thread_instance = threading.Thread(target=polling_thread, args=(bot_instance,))
+        polling_thread_instance = threading.Thread(
+            target=polling_thread, args=(bot_instance,))
         polling_thread_instance.start()
 
         while infinity:
@@ -246,4 +262,3 @@ if __name__ == "__main__":
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
-
