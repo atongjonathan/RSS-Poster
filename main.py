@@ -13,10 +13,12 @@ billboard_chat_id = -1002103516422
 citizen_chat_id = -1001908193905
 animecorner_chat_id = -1002056978598
 soompi_chat_id = -1002042618375
+tmz_chat_id = -1002139940705
 billboard_url = "https://billboard.com/feed/"
 citizen_url = "https://citizen.digital/feed.xml"
 animecorner_url = "https://animecorner.me/feed/"
 soompi_url = "https://www.soompi.com/feed"
+tmz_url = "https://www.tmz.com/rss.xml"
 processed_urls = set()
 infinity = True
 
@@ -153,14 +155,15 @@ def send_data(entries, func, domain, chat_id):
                 print(e)
 
 
-urls = [animecorner_url, billboard_url, citizen_url, soompi_url]
-channels = ["animecorner", "billboard", "citizen", "soompi"]
+urls = [animecorner_url, billboard_url, citizen_url, soompi_url, tmz_url]
+channels = ["animecorner", "billboard", "citizen", "soompi", "tmz"]
 chat_ids = [
     animecorner_chat_id,
     billboard_chat_id,
     citizen_chat_id,
-    soompi_chat_id]
-functions = [billboard, billboard, send_citizen_data, billboard]
+    soompi_chat_id,
+    tmz_chat_id]
+functions = [billboard, billboard, send_citizen_data, billboard, billboard]
 items = {}
 for idx, channel in enumerate(channels):
     items[channel] = {
