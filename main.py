@@ -64,6 +64,8 @@ def hello(message):
     with open('logs.txt')as file:
         text = file.read()
     bot.send_message(message.chat.id, text)
+    with open('logs.txt', 'w')as file:
+        file.write("")
 
 
 @bot.message_handler(commands=["stop"])
