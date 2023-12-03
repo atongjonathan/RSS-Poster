@@ -6,7 +6,7 @@ from logger import LOGGER
 
 infinity = True
 
-TELGRAM_BOT_TOKEN = os.environ.get('TELGRAM_BOT_TOKEN')
+TELGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 
 FEEDS = [
