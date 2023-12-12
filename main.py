@@ -1,31 +1,34 @@
 import telebot
-from telebot import util,types
+from telebot import util, types
 import time
 from utils import extract_data, format
 import os
 from logger import LOGGER
 
+
 def get_domain_from_url(url):
     try:
         # Split the URL by "//" and take the second part
-        url = url.replace("www","")
+        url = url.replace("www", "")
         domain = url.split("//")[1].split("/")[0]
         return domain.replace(".com", "").split(".")[0]
     except Exception as e:
         LOGGER.error(f"Error {e} extracting from {url}:")
         return None
 
+
 def send_data(entries, domain, chat_id, no_of_links):
     for entry in entries:
-        message,content = format(entry)        
+        message, content = format(entry)
         not_sent = update_files(path=f"./db/{domain}.txt", link=entry["link"])
         if not_sent:
             try:
                 markup = types.InlineKeyboardMarkup()
                 button = types.InlineKeyboardButton("Read More", url=content)
-                markup.add(button)                
-                sent_message = bot.send_message(1095126805, message,reply_markup=markup, parse_mode="html")
-                message_data = {"id":sent_message.id, "content":content}
+                markup.add(button)
+                sent_message = bot.send_message(
+                    1095126805, message, reply_markup=markup, parse_mode="html")
+                message_data = {"id": sent_message.id, "content": content}
                 messages_content.append(message_data)
                 time.sleep(2)
                 no_of_links += 1
@@ -35,7 +38,7 @@ def send_data(entries, domain, chat_id, no_of_links):
     return no_of_links
 
 
-def to_update(items,message,no_of_links = 0):    
+def to_update(items, message, no_of_links=0):
     for (key, value) in items.items():
         domain = key
         url = value["feed"]
@@ -44,18 +47,24 @@ def to_update(items,message,no_of_links = 0):
             data = extract_data(url)
         except Exception as e:
             LOGGER.error(f"Error {e} when extracting data from {domain}")
-        bot.edit_message_text(f"Updating {domain.title()}", message.chat.id, message.id)
+        bot.edit_message_text(
+            f"Updating {domain.title()}",
+            message.chat.id,
+            message.id)
         try:
             links = send_data(data, domain, chat_id, no_of_links)
             no_of_links += links
-            bot.edit_message_text(f"Updated {domain.title()} Successfully!. Links sent {no_of_links}", message.chat.id, message.id)
+            bot.edit_message_text(
+                f"Updated {domain.title()} Successfully!. Links sent {no_of_links}",
+                message.chat.id,
+                message.id)
         except Exception as e:
             LOGGER.error(f"Error '{e}' occurred when sending {domain} data")
-            bot.edit_message_text(f"Updated {domain} failed!. Error: {e}", message.chat.id, message.id)        
+            bot.edit_message_text(
+                f"Updated {domain} failed!. Error: {e}",
+                message.chat.id,
+                message.id)
     return no_of_links
-
-
-
 
 
 def update_files(path, link):
@@ -74,8 +83,6 @@ def update_files(path, link):
 
 
 TELGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-TELGRAM_BOT_TOKEN = "6726476385:AAFCpAcbxZ-RLuUYIWhaW75TD22Tpl5teRo"
-
 
 
 FEEDS = [
@@ -98,6 +105,8 @@ FEEDS = [
         "chat_id": 1095126805, "url": "https://animesenpai.net/feed/"
     }
 ]
+
+
 urls = [feed["url"] for feed in FEEDS]
 chat_ids = [feed["chat_id"] for feed in FEEDS]
 domains = [get_domain_from_url(url) for url in urls]
@@ -107,8 +116,9 @@ for idx, channel in enumerate(domains):
         "feed": urls[idx],
         "chat_id": chat_ids[idx],
     }
-
 messages_content = []
+
+
 bot = telebot.TeleBot(TELGRAM_BOT_TOKEN, parse_mode="HTML")
 @bot.message_handler(commands=["start"])
 def hello(message):
@@ -136,7 +146,7 @@ def stop(message=None):
 @bot.message_handler(commands=["update"])
 def update(message):
     message = bot.send_message(message.chat.id, "Updating channels ⏳...")
-    no_of_links = to_update(items,message)
+    no_of_links = to_update(items, message)
     bot.edit_message_text(
         f"Completed ✅ total links sent {no_of_links}",
         message.chat.id,
@@ -147,6 +157,4 @@ def update(message):
 if __name__ == "__main__":
     LOGGER.info("Bot online")
     bot.polling(non_stop=True)
-    # data = format(extract_data("https://billboard.com/feed/"))
-    # print(data)
-    # bot.send_message(, data)
+

@@ -25,27 +25,30 @@ def get_citizen_content(content):
             content_text += paragraph.text
     return content_text, img_src, caption
 
+
 def format(entry):
     try:
         content = entry["content"][0]["value"]
         content_text, img_src, caption = get_citizen_content(content)
-    except:
-        content_text, img_src, caption = None,None,None
+    except BaseException:
+        content_text, img_src, caption = None, None, None
     tags = entry["tags"]
     author = entry["author"]
     published = entry["published"]
     updated = entry["updated"]
     summary = entry['summary']
     description = entry["description"]
-    summary = description if summary == None else summary
+    summary = description if summary is None else summary
     summary_soup = BeautifulSoup(summary, "html.parser")
     if len(summary_soup.find_all("p")) > 0:
         p_list = summary_soup.find_all("p")
     else:
         p_list = [summary_soup]
-    summary = ''.join([item.text  for item in p_list if "The post" not in item.text])
-    tags = '' if tags == None else tags
-    tags = [f'#{tag["term"].strip(string.punctuation.replace(" ", ""))}' for tag in tags]
+    summary = ''.join(
+        [item.text for item in p_list if "The post" not in item.text])
+    tags = '' if tags is None else tags
+    tags = [
+        f'#{tag["term"].strip(string.punctuation.replace(" ", ""))}' for tag in tags]
     tags = ", ".join(tags)
     author = "" if author is None else f"Article written by <b>{author}</b>"
     published = f'Published on {updated.split("+")[0].replace("T", " at ")}' if published is None else f'Published on {published}'
@@ -59,13 +62,22 @@ def extract_data(feed_url: str):
     parser = feedparser.parse(feed_url)
     entries = parser.entries
     data = []
-    attributes = ["tags", "content","author", "title", "link", "summary", "published", "updated", "description"]
+    attributes = [
+        "tags",
+        "content",
+        "author",
+        "title",
+        "link",
+        "summary",
+        "published",
+        "updated",
+        "description"]
     for entry in entries:
         item = {}
         for attribute in attributes:
             try:
                 item[attribute] = html.unescape(getattr(entry, attribute))
-            except:
-                item[attribute]  = None
+            except BaseException:
+                item[attribute] = None
         data.append(item)
     return data
