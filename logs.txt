@@ -301,3 +301,62 @@ telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsucc
 2023-12-12 13:49:14,527 | INFO | main - line_no 38 : Soompi updated successfully 
 2023-12-12 13:49:23,204 | INFO | main - line_no 38 : Tmz updated successfully 
 2023-12-12 13:49:33,008 | INFO | main - line_no 38 : Animesenpai updated successfully 
+2023-12-12 14:21:43,368 | INFO | main - line_no 160 : Bot online 
+2023-12-12 14:23:14,832 | INFO | main - line_no 160 : Bot online 
+2023-12-12 15:06:29,883 | INFO | main - line_no 160 : Bot online 
+2023-12-12 15:06:34,625 | INFO | main - line_no 38 : Billboard updated successfully 
+2023-12-12 15:06:37,027 | ERROR | main - line_no 37 : Error 'A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found' occured when sending citizen data 
+2023-12-12 15:06:37,310 | ERROR | main - line_no 37 : Error 'A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found' occured when sending citizen data 
+2023-12-12 15:06:37,637 | ERROR | main - line_no 37 : Error 'A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found' occured when sending citizen data 
+2023-12-12 15:06:38,011 | ERROR | main - line_no 37 : Error 'A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found' occured when sending citizen data 
+2023-12-12 15:06:38,209 | INFO | main - line_no 38 : Citizen updated successfully 
+2023-12-12 15:06:42,981 | INFO | main - line_no 38 : Animecorner updated successfully 
+2023-12-12 15:06:45,778 | INFO | main - line_no 38 : Soompi updated successfully 
+2023-12-12 15:06:48,660 | INFO | main - line_no 38 : Tmz updated successfully 
+2023-12-12 15:06:54,797 | INFO | main - line_no 38 : Animesenpai updated successfully 
+2023-12-12 16:13:26,807 | INFO | main - line_no 164 : Bot online 
+2023-12-12 16:13:31,938 | ERROR | __init__ - line_no 1083 : Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running 
+2023-12-12 16:13:31,941 | ERROR | __init__ - line_no 1085 : Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 1073, in __threaded_polling
+    polling_thread.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\util.py", line 108, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 649, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 623, in get_updates
+    json_updates = apihelper.get_updates(self.token, offset, limit, timeout, allowed_updates, long_polling_timeout)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 321, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+ 
+2023-12-12 16:14:04,750 | INFO | main - line_no 164 : Bot online 
+2023-12-12 16:14:09,363 | ERROR | __init__ - line_no 1083 : Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running 
+2023-12-12 16:14:09,366 | ERROR | __init__ - line_no 1085 : Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 1073, in __threaded_polling
+    polling_thread.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\util.py", line 108, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 649, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\__init__.py", line 623, in get_updates
+    json_updates = apihelper.get_updates(self.token, offset, limit, timeout, allowed_updates, long_polling_timeout)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 321, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Local Bot\Echo bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+ 
+2023-12-12 16:14:44,820 | INFO | main - line_no 164 : Bot online 
+2023-12-12 16:14:56,813 | INFO | main - line_no 164 : Bot online 

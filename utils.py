@@ -50,7 +50,7 @@ def format(entry):
     tags = [
         f'#{tag["term"].strip(string.punctuation.replace(" ", ""))}' for tag in tags]
     tags = ", ".join(tags)
-    author = "" if author is None else f"Article written by <b>{author}</b>"
+    author = "" if author is None else f"\n\nArticle written by <b>{author}</b>"
     published = f'Published on {updated.split("+")[0].replace("T", " at ")}' if published is None else f'Published on {published}'
     content_text = "" if content_text is None else content_text
     caption = '' if caption is None else caption

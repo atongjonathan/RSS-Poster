@@ -27,7 +27,7 @@ def send_data(entries, domain, chat_id, no_of_links):
                 button = types.InlineKeyboardButton("Read More", url=content)
                 markup.add(button)
                 sent_message = bot.send_message(
-                    1095126805, message, reply_markup=markup, parse_mode="html")
+                    chat_id, message, reply_markup=markup, parse_mode="html")
                 message_data = {"id": sent_message.id, "content": content}
                 messages_content.append(message_data)
                 time.sleep(2)
@@ -83,7 +83,6 @@ def update_files(path, link):
 
 
 TELGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-
 
 FEEDS = [
     {
@@ -144,8 +143,9 @@ def stop(message=None):
 
 
 @bot.message_handler(commands=["update"])
-def update(message):
-    message = bot.send_message(message.chat.id, "Updating channels ⏳...")
+def update(message=None):
+    chat_id = 1095126805 if message is None else message.chat.id
+    message = bot.send_message(chat_id, "Updating channels ⏳...")
     no_of_links = to_update(items, message)
     bot.edit_message_text(
         f"Completed ✅ total links sent {no_of_links}",
@@ -154,7 +154,10 @@ def update(message):
     no_of_links = 0
 
 
-if __name__ == "__main__":
+def start_bot(bot):
     LOGGER.info("Bot online")
-    bot.polling(non_stop=True)
+    bot.polling()
 
+
+if __name__ == "__main__":
+    start_bot(bot)
