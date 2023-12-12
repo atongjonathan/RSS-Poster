@@ -1,98 +1,71 @@
 import feedparser
 from bs4 import BeautifulSoup
 from logger import LOGGER
-processed_urls = set()
+import html
+import string
 
 
-def send_citizen_data(entry):
-    html_content = entry["html_content"]
-    link = entry["link"]
-    title = entry["title"]
-    date = entry["date"]
-    author = entry["author"]
-    try:
-        author_detail = author["author_detail"]
-        author = author_detail["name"]
-        email = author_detail["email"]
-    except KeyError:
-        author = "None"
-    author_text = ""
-    if author != "None":
-        author_text = f"<i>Article written by <a href='mailto:{email}'>{author}</a></i>"
-    soup = BeautifulSoup(html_content, "html.parser")
+def get_citizen_content(content):
+    soup = BeautifulSoup(content, "html.parser")
     p = soup.find_all("p")
     div = soup.find_all("div")
-
+    img_tag = soup.find('img')
+    img_src = img_tag['src'] if img_tag else None
+    caption = soup.find('figcaption').text
     content_text = ""
-
     for paragraph in p:
         spans = paragraph.find_all("span", class_="tg-spoiler")
-        img_tag = soup.find('img')
-        img_src = img_tag['src'] if img_tag else None
-        caption = soup.find('figcaption').text
         if spans:
             for span in spans:
-                content_text += '\nStart-span\n' + span.text + '\nEnd-start\n'
+                content_text += '\n' + span.text + '\n'
         else:
             content_text += '\n' + paragraph.text.strip().replace("\n", " ") + '\n'
     if content_text == "":
         for paragraph in div:
-            img_tag = soup.find('img')
-            img_src = img_tag['src'] if img_tag else None
-            caption = soup.find('figcaption').text
-            date = soup.find("pubDate")
-            author = soup.find("author")
             content_text += paragraph.text
+    return content_text, img_src, caption
 
+def format(entry):
     try:
-        message = f"<a href='{link}'><b>{title}</b></a>\n<code>{content_text}</code>\n\n<i>Published on {date}</i>\n\n<b>{author_text}</b>\n\n<a href='{img_src}'>{caption}</a>"
-    except UnboundLocalError:
-        message = f"<a href='{link}'><b>{title}</b></a>\n{content_text}"
-        LOGGER.error(f"No link found for for {title}")
-    except BaseException:
-        pass
-    finally:
-        processed_urls.add(link)
-    return message
-
-
-def billboard(entry):
-    link = entry["link"]
-    title = entry["title"]
-    date = entry["date"]
-    summary = entry["summary"]
+        content = entry["content"][0]["value"]
+        content_text, img_src, caption = get_citizen_content(content)
+    except:
+        content_text, img_src, caption = None,None,None
+    tags = entry["tags"]
     author = entry["author"]
-    try:
-        tags = ', '.join(entry["tags"])
-    except KeyError:
-        tags = ""
+    published = entry["published"]
+    updated = entry["updated"]
+    summary = entry['summary']
+    description = entry["description"]
+    summary = description if summary == None else summary
+    summary_soup = BeautifulSoup(summary, "html.parser")
+    if len(summary_soup.find_all("p")) > 0:
+        p_list = summary_soup.find_all("p")
+    else:
+        p_list = [summary_soup]
+    summary = ''.join([item.text  for item in p_list if "The post" not in item.text])
+    tags = '' if tags == None else tags
+    tags = [f'#{tag["term"].strip(string.punctuation.replace(" ", ""))}' for tag in tags]
+    tags = ", ".join(tags)
+    author = "" if author is None else f"Article written by <b>{author}</b>"
+    published = f'Published on {updated.split("+")[0].replace("T", " at ")}' if published is None else f'Published on {published}'
+    content_text = "" if content_text is None else content_text
+    caption = '' if caption is None else caption
+    message = f"<a href='{entry['link']}'><b>{entry['title']}</b></a>\n\n{summary}<i>{author}</i>\n\n{published}\n\n<a href='{img_src}'>{caption}</a>"
+    return message, entry['link']
 
-    summary = summary.replace("<p>", "").replace("</p>", "")
-    message = f"<a href='{link}'><b>{title}</b></a>\n\n{summary}\n\n{tags}\n\n<i>Article written by <b>{author}</b>\nPublished on {date}</i>"
-    return message
 
-
-def extract_data(feed_url: str, domain):
-    feed = feedparser.parse(feed_url)
-    entries = feed.entries
+def extract_data(feed_url: str):
+    parser = feedparser.parse(feed_url)
+    entries = parser.entries
     data = []
+    attributes = ["tags", "content","author", "title", "link", "summary", "published", "updated", "description"]
     for entry in entries:
-
-        item = {
-            "title": entry.title,
-            "link": entry.link,
-            "summary": entry.summary
-        }
-        if domain == "billboard" or domain == "soompi" or domain == "animecorner":
+        item = {}
+        for attribute in attributes:
             try:
-                item["tags"] = [
-                    f'#{tag["term"].replace(" ","")}' for tag in entry.tags]
-            except KeyError:
-                pass
-        item["date"] = entry.published if domain != "tmz" else entry["updated"]
-        item["author"] = entry if "citizen" in domain else entry.author
-        item["html_content"] = entry.content[0].value if "citizen" in domain else None
+                item[attribute] = html.unescape(getattr(entry, attribute))
+            except:
+                item[attribute]  = None
         data.append(item)
-    sorted_data = sorted(data, key=lambda entry: entry["date"])
-
-    return sorted_data
+    return data
