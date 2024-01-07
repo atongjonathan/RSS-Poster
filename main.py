@@ -102,6 +102,9 @@ FEEDS = [
     },
     {
         "chat_id": 1095126805, "url": "https://animesenpai.net/feed/"
+    },
+    {
+        "chat_id": -1002011684310, "url": "https://variety.com/feed/"
     }
 ]
 
