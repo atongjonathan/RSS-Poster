@@ -105,6 +105,9 @@ FEEDS = [
     },
     {
         "chat_id": -1002011684310, "url": "https://variety.com/feed/"
+    },
+    {
+        "chat_id": --1002033211373, "url": "https://weaintgotnohistory.sbnation.com/rss/index.xml/"
     }
 ]
 
