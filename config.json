@@ -1,0 +1,26 @@
+[
+    {
+        "chat_id": 1095126805,
+        "url": "https://animesenpai.net/feed/"
+    },
+    {
+        "chat_id": -1002103516422,
+        "url": "https://billboard.com/feed/"
+    },
+    {
+        "chat_id": -1001908193905,
+        "url": "https://citizen.digital/feed.xml"
+    },
+    {
+        "chat_id": -1002056978598,
+        "url": "https://animecorner.me/feed/"
+    },
+    {
+        "chat_id": -1002042618375,
+        "url": "https://soompi.com/feed"
+    },
+    {
+        "chat_id": -1002011684310,
+        "url": "https://variety.com/feed/"
+    }
+]
