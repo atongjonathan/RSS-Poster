@@ -43,6 +43,10 @@ def update(message=None):
     feeds = poster.FEEDS
     no_of_links = 0
     for feed in feeds:
+        bot.edit_message_text(
+            f"updating {feed['domain']}... ",
+            message.chat.id,
+            message.id)        
         messages = poster.get_messages(feed)
         for item in messages:
             markup = types.InlineKeyboardMarkup()
@@ -54,12 +58,11 @@ def update(message=None):
                 continue
             bot.send_message(
                 feed["chat_id"], item["text"], reply_markup=markup)
-            time.sleep(60)
             no_of_links += 1
             time.sleep(2)
 
         bot.edit_message_text(
-            f"Completed ✅ total links sent {no_of_links}",
+            f"Completed updating {feed['domain']} ✅ total links sent {no_of_links}",
             message.chat.id,
             message.id)
         no_of_links = 0
