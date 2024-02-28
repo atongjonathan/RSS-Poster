@@ -21,7 +21,6 @@ poster = RSSPoster()
 create_table()
 
 
-
 @bot.message_handler(commands=["start"])
 def hello(message):
     bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}")
@@ -54,18 +53,16 @@ def update(message=None):
             except:
                 continue
             bot.send_message(
-            feed["chat_id"], item["text"], reply_markup=markup)
+                feed["chat_id"], item["text"], reply_markup=markup)
             time.sleep(60)
             no_of_links += 1
             time.sleep(2)
-            break
 
         bot.edit_message_text(
             f"Completed ✅ total links sent {no_of_links}",
             message.chat.id,
             message.id)
         no_of_links = 0
-
 
 
 if __name__ == "__main__":

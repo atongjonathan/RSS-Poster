@@ -6,13 +6,13 @@ from logging import getLogger
 from dotenv import load_dotenv
 import json
 
+
 class RSSPoster():
     def __init__(self):
         self.FEEDS = self.get_feeds()
         self.logger = getLogger(__name__)
 
-
-    def get_feeds(self)->list:
+    def get_feeds(self) -> list:
         """Gets feeds from config.json and adding domain key with value to it"""
         with open("config.json") as file:
             FEEDS = json.load(fp=file)
@@ -20,7 +20,7 @@ class RSSPoster():
             feed["domain"] = self.get_domain_from_url(feed["url"]).title()
         return FEEDS
 
-    def get_domain_from_url(self, url:str)->str:
+    def get_domain_from_url(self, url: str) -> str:
         """Gets the domain given a url"""
         try:
             # Split the URL by "//" and take the second part
@@ -56,7 +56,7 @@ class RSSPoster():
             data.append(item)
         return data
 
-    def format(self, entry)->dict:
+    def format(self, entry) -> dict:
         """Compiles all entry data into a message text"""
         try:
             content = entry["content"][0]["value"]
@@ -87,7 +87,7 @@ class RSSPoster():
         caption = '' if caption is None else caption
         text = f"<a href='{entry['link']}'><b>{entry['title']}</b></a>\n\n{summary}<i>{author}</i>\n\n{published}\n\n<a href='{img_src}'>{caption}</a>"
         message = {"text": text, "url": entry['link']}
-        return message 
+        return message
 
     def get_citizen_content(self, content):
         """For links from citizen and formats its data uniquely"""
@@ -110,7 +110,7 @@ class RSSPoster():
                 content_text += paragraph.text
         return content_text, img_src, caption
 
-    def get_messages(self, feed:dict)->list:
+    def get_messages(self, feed: dict) -> list:
         """Gets all the messages to be sent from a feed"""
         entries = self.extract_data(feed["url"])
         messages = [self.format(entry) for entry in entries]

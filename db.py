@@ -13,20 +13,20 @@ def create_table():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             data JSON UNIQUE
         )
-    ''')  
+    ''')
 
     # Commit the changes and close the connection
     conn.commit()
     conn.close()
 
 
-
 def insert_json_data(json_data):
     conn = sqlite3.connect('channel_links.db')
-    cursor = conn.cursor()    
+    cursor = conn.cursor()
 
     # Insert the JSON data into the table
-    cursor.execute('INSERT INTO json_data (data) VALUES (?)', (json.dumps(json_data),))
+    cursor.execute('INSERT INTO json_data (data) VALUES (?)',
+                   (json.dumps(json_data),))
 
     # Commit the changes and close the connection
     conn.commit()
@@ -35,7 +35,7 @@ def insert_json_data(json_data):
 
 def get_all_data(data):
     conn = sqlite3.connect('channel_links.db')
-    cursor = conn.cursor()    
+    cursor = conn.cursor()
     # Retrieve all rows from the table
     cursor.execute(f'SELECT data FROM {data}')
     rows = cursor.fetchall()
