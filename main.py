@@ -5,6 +5,25 @@ from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
 from mongodb import Database
 import os
+import flask
+
+app = flask.Flask(__name__)
+
+@app.route('/', methods=['GET', 'HEAD'])
+def index():
+    return 'Bot should be running'
+
+    
+@app.route("/", methods=['POST'])
+def webhook():
+    if flask.request.headers.get('content-type') == 'application/json':
+        json_string = flask.request.stream.read().decode("utf-8")
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return 'OK', 200
+    else:
+        flask.abort(403)
+
 
 # from db import *
 
@@ -72,5 +91,7 @@ def update(message=None):
 
 
 if __name__ == "__main__":
-    logger.info("Bot online")
-    bot.polling()
+    logger.info("Bot is running ... ")
+    bot.remove_webhook()
+    # Set webhook
+    bot.set_webhook(url="https://atongjona.pythonanywhere.com/")
