@@ -3,6 +3,7 @@ import sqlite3
 import json
 
 
+
 def create_table():
     conn = sqlite3.connect('channel_links.db')
     cursor = conn.cursor()

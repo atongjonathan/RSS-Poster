@@ -3,8 +3,10 @@ from telebot import util, types
 import time
 import os
 from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
-from poster import RSSPoster
-from db import *
+from sqllite import RSSPoster
+from mongodb import Database
+
+# from db import *
 
 basicConfig(
     format="%(asctime)s | %(levelname)s | %(module)s - line_no %(lineno)s : %(message)s ",
@@ -18,7 +20,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
-create_table()
+db = Database()
 
 
 @bot.message_handler(commands=["start"])
@@ -44,7 +46,7 @@ def update(message=None):
     no_of_links = 0
     for feed in feeds:
         bot.edit_message_text(
-            f"updating {feed['domain']}... ",
+            f"Updating {feed['domain']}... ",
             message.chat.id,
             message.id)        
         messages = poster.get_messages(feed)
@@ -53,8 +55,9 @@ def update(message=None):
             button = types.InlineKeyboardButton("Read More", url=item["url"])
             markup.add(button)
             try:
-                insert_json_data(item)
+                db.insert_json_data(item)
             except:
+                logger.info("Message already exists")
                 continue
             bot.send_message(
                 feed["chat_id"], item["text"], reply_markup=markup)
