@@ -4,7 +4,6 @@ import time
 from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
 from mongodb import Database
-import os
 
 # from db import *
 
@@ -16,7 +15,7 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = "5954527089:AAHQJGcyGaI_MfT6DsoEgmKicfjBujizCbA"
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
