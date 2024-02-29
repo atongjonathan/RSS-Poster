@@ -72,4 +72,5 @@ def update(message=None):
 
 if __name__ == "__main__":
     logger.info("Bot online")
+    bot.delete_webhook()
     bot.polling()
