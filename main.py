@@ -1,9 +1,8 @@
 import telebot
 from telebot import util, types
 import time
-import os
 from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
-from sqllite import RSSPoster
+from poster import RSSPoster
 from mongodb import Database
 
 # from db import *
@@ -16,7 +15,7 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = "5954527089:AAHQJGcyGaI_MfT6DsoEgmKicfjBujizCbA"
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
@@ -57,7 +56,7 @@ def update(message=None):
             try:
                 db.insert_json_data(item)
             except:
-                logger.info("Message already exists")
+                pass
                 continue
             bot.send_message(
                 feed["chat_id"], item["text"], reply_markup=markup)
