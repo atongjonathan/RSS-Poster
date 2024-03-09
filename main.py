@@ -34,7 +34,11 @@ def hello(message):
         text = file.read()
     splitted_text = util.smart_split(text, 4096)
     for text_instance in splitted_text:
-        bot.send_message(message.chat.id, text_instance)
+        try:
+            bot.send_message(message.chat.id, text_instance)
+        except Exception as e:
+            logger.error(e)
+            return
     with open('logs.txt', 'w')as file:
         file.write("")
 
@@ -78,5 +82,8 @@ def update(message=None):
 
 if __name__ == "__main__":
     logger.info("Bot online")
-    bot.delete_webhook()
+    try:
+        bot.polling()
+    except Exception as e:
+        logger.error(f"Error durrring polling: {e}")
     bot.polling()
