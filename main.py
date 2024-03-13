@@ -68,15 +68,16 @@ def update(message=None):
                     feed["chat_id"], item["text"], reply_markup=markup)
             except Exception as e:
                 messages = util.smart_split(item['text'])
-                for message in messages:
+                for split_message in messages:
                     try:
                         bot.send_message(
-                            feed["chat_id"], text=message, reply_markup=markup)
+                            feed["chat_id"], text=split_message, reply_markup=markup)
                     except Exception as e:
                         logger.error(
                             f"An error occured when sending smart split :'{e}'")
+                    time.sleep(3)
             no_of_links += 1
-            time.sleep(2)
+            
 
         bot.edit_message_text(
             f"Completed updating {feed['domain']} ✅",
