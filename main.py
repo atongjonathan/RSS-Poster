@@ -52,7 +52,7 @@ def update(message=None):
         bot.edit_message_text(
             f"Updating {feed['domain']}... ",
             message.chat.id,
-            message.id)        
+            message.id)
         messages = poster.get_messages(feed)
         for item in messages:
             markup = types.InlineKeyboardMarkup()
@@ -65,11 +65,16 @@ def update(message=None):
                 continue
             try:
                 bot.send_message(
-                feed["chat_id"], item["text"], reply_markup=markup)
+                    feed["chat_id"], item["text"], reply_markup=markup)
             except Exception as e:
                 messages = util.smart_split(item['text'])
                 for message in messages:
-                    bot.send_message(item["chat_id"], text=message, reply_markup=markup)
+                    try:
+                        bot.send_message(
+                            feed["chat_id"], text=message, reply_markup=markup)
+                    except Exception as e:
+                        logger.error(
+                            f"An error occured when sending smart split :'{e}'")
             no_of_links += 1
             time.sleep(2)
 
