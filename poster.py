@@ -3,17 +3,27 @@ from bs4 import BeautifulSoup
 import html
 import string
 from logging import getLogger
-from dotenv import load_dotenv
 import json
+from telegraph import Telegraph
+import html
 
 
 class RSSPoster():
     def __init__(self):
         self.FEEDS = self.get_feeds()
         self.logger = getLogger(__name__)
+        self.telegraph = Telegraph()
+        self.telegraph.create_account("Citizen")
 
     def get_feeds(self) -> list:
-        """Gets feeds from config.json and adding domain key with value to it"""
+        """Gets feeds from config.json and adding domain key with value to it
+
+            Returns:
+                FEEDS (list) a list of dictionaries including:
+                    - 'chat_id (int)'
+                    - 'url' (str) 
+                    - ''domain' (str)
+        """
         with open("config.json") as file:
             FEEDS = json.load(fp=file)
         for feed in FEEDS:
@@ -21,7 +31,15 @@ class RSSPoster():
         return FEEDS
 
     def get_domain_from_url(self, url: str) -> str:
-        """Gets the domain given a url"""
+        """Gets the domain given a url
+
+            Args:
+                - 'url' (str) - feed url
+            
+            Returns:
+                - 'domain (str)'
+        
+        """
         try:
             # Split the URL by "//" and take the second part
             url = url.replace("www", "")
@@ -31,8 +49,27 @@ class RSSPoster():
             self.logger.error(f"Error {e} extracting from {url}:")
             return None
 
-    def extract_data(self, feed_url: str):
-        """Extracts data from rss url"""
+    def extract_data(self, feed_url: str)-> list:
+        """Extracts data from rss url
+        
+        Args:
+            - 'feed_url' (str): RSS feed url
+
+        Returns a list of dict containing:
+            - 'tags' (list): of dicts including:
+                - 'term': The tag string
+                - 'scheme': None
+                - 'label': None
+            - 'content': HTML string of content data
+            - 'author' (str):
+            - 'title' (str):
+            - 'link' (str):
+            - 'summary' (str): HTML string of summary 
+            - 'published' (str):
+            - 'updated' (str):
+            - 'description' (str):      
+             
+        """
         parser = feedparser.parse(feed_url)
         entries = parser.entries
         data = []
@@ -57,11 +94,28 @@ class RSSPoster():
         return data
 
     def format(self, entry) -> dict:
-        """Compiles all entry data into a message text"""
+        """Compiles all entry data into a message text
+        
+        Args:
+            - entry (dict): Instance of a single from an extracted data
+
+        Returns:
+            - message (dict): including:
+                - text (str): HTML formatted text
+                - url (str): Instant view url 
+        """
+        content = html.unescape(entry["content"][0]["value"].strip())
+        print(content)
+        response = self.telegraph.create_page(title=entry['title'], content=content)
+        print(response)
         try:
             content = entry["content"][0]["value"]
+            
+            
+            entry["link"] = response["url"]
             content_text, img_src, caption = self.get_citizen_content(content)
-        except BaseException:
+        except Exception as e:
+            print(e)
             content_text, img_src, caption = None, None, None
         tags = entry["tags"]
         author = entry["author"]
@@ -110,8 +164,8 @@ class RSSPoster():
                 content_text += paragraph.text
         return content_text, img_src, caption
 
-    def get_messages(self, feed: dict) -> list:
-        """Gets all the messages to be sent from a feed"""
-        entries = self.extract_data(feed["url"])
+    def get_messages(self, url: str) -> list:
+        """Gets all the formatted messages to be sent from a feed"""
+        entries = self.extract_data(url)
         messages = [self.format(entry) for entry in entries]
         return messages
