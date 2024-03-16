@@ -16,7 +16,7 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = "5954527089:AAHQJGcyGaI_MfT6DsoEgmKicfjBujizCbA"
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
@@ -53,7 +53,7 @@ def update(message=None):
             f"Updating {feed['domain']}... ",
             message.chat.id,
             message.id)
-        messages = poster.get_messages(feed["url"])
+        messages = poster.get_messages(feed.get("url"))
         for item in messages:
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton("Read More", url=item["url"])
@@ -72,23 +72,24 @@ def update(message=None):
                         bot.send_message(
                             feed["chat_id"], text=split_message, reply_markup=markup)
                     except Exception as e:
+                        if "429" in str(e):
+                            duration = int(e[-2:])
                         logger.error(
-                            f"An error occured when sending smart split :'{e}'")
-                    time.sleep(1.5)
+                            f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
+                        time.sleep(duration)
             no_of_links += 1
-            break
-            
 
         bot.edit_message_text(
             f"Completed updating {feed['domain']}",
             message.chat.id,
             message.id)
-        
+
     bot.edit_message_text(
-            f"Finished update. Links sent: {no_of_links} ✅",
-            message.chat.id,
-            message.id)
+        f"Finished update. Links sent: {no_of_links} ✅",
+        message.chat.id,
+        message.id)
     no_of_links = 0
+
 
 if __name__ == "__main__":
     logger.info("Bot online")

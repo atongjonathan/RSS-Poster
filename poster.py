@@ -110,8 +110,8 @@ class RSSPoster():
                 content_text += paragraph.text
         return content_text, img_src, caption
 
-    def get_messages(self, feed: dict) -> list:
+    def get_messages(self, url: dict) -> list:
         """Gets all the messages to be sent from a feed"""
-        entries = self.extract_data(feed["url"])
+        entries = self.extract_data(url)
         messages = [self.format(entry) for entry in entries]
         return messages
