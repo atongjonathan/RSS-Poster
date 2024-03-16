@@ -53,7 +53,7 @@ def update(message=None):
             f"Updating {feed['domain']}... ",
             message.chat.id,
             message.id)
-        messages = poster.get_messages(feed)
+        messages = poster.get_messages(feed["url"])
         for item in messages:
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton("Read More", url=item["url"])
@@ -61,7 +61,6 @@ def update(message=None):
             try:
                 db.insert_json_data(item)
             except:
-                pass
                 continue
             try:
                 bot.send_message(
@@ -75,21 +74,22 @@ def update(message=None):
                     except Exception as e:
                         logger.error(
                             f"An error occured when sending smart split :'{e}'")
-                    time.sleep(3)
+                    time.sleep(1.5)
             no_of_links += 1
+            break
             
 
         bot.edit_message_text(
-            f"Completed updating {feed['domain']} ✅",
+            f"Completed updating {feed['domain']}",
             message.chat.id,
             message.id)
-        no_of_links = 0
-
+        
+    bot.edit_message_text(
+            f"Finished update. Links sent: {no_of_links} ✅",
+            message.chat.id,
+            message.id)
+    no_of_links = 0
 
 if __name__ == "__main__":
     logger.info("Bot online")
-    try:
-        bot.polling()
-    except Exception as e:
-        logger.error(f"Error durrring polling: {e}")
     bot.polling()
