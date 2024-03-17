@@ -73,7 +73,7 @@ def update(message=None):
                             feed["chat_id"], text=split_message, reply_markup=markup)
                     except Exception as e:
                         if "429" in str(e):
-                            duration = int(e[-2:])
+                            duration = int(str(e[-2:]))
                         logger.error(
                             f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
                         time.sleep(duration)
