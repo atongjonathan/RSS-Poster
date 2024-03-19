@@ -73,7 +73,11 @@ def update(message=None):
                             feed["chat_id"], text=split_message, reply_markup=markup)
                     except Exception as e:
                         if "429" in str(e):
-                            duration = int(str(e[-2:]))
+                            duration = int(e.__str__()[-2:])
+                        bot.edit_message_text(
+            f"Update paused for {duration}s due to too many messages, for {feed['domain']} will resume shortly...",
+            message.chat.id,
+            message.id)
                         logger.error(
                             f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
                         time.sleep(duration)
