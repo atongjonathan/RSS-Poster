@@ -24,9 +24,11 @@ class RSSPoster():
         """Gets the domain given a url"""
         try:
             # Split the URL by "//" and take the second part
-            url = url.replace("www", "")
+            url = url.replace("www.", "")
             domain = url.split("//")[1].split("/")[0]
-            return domain.replace(".com", "").split(".")[0]
+            if ".com" in url:                
+                return domain.replace(".com", "").split(".")[0]
+            return domain.replace(".co", "").split(".")[0]
         except Exception as e:
             self.logger.error(f"Error {e} extracting from {url}:")
             return None
