@@ -24,9 +24,11 @@ class RSSPoster():
         """Gets the domain given a url"""
         try:
             # Split the URL by "//" and take the second part
-            url = url.replace("www", "")
+            url = url.replace("www.", "")
             domain = url.split("//")[1].split("/")[0]
-            return domain.replace(".com", "").split(".")[0]
+            if ".com" in url:                
+                return domain.replace(".com", "").split(".")[0]
+            return domain.replace(".co", "").split(".")[0]
         except Exception as e:
             self.logger.error(f"Error {e} extracting from {url}:")
             return None
@@ -34,6 +36,7 @@ class RSSPoster():
     def extract_data(self, feed_url: str):
         """Extracts data from rss url"""
         parser = feedparser.parse(feed_url)
+        domain = self.get_domain_from_url(feed_url)
         entries = parser.entries
         data = []
         attributes = [
@@ -53,20 +56,20 @@ class RSSPoster():
                     item[attribute] = html.unescape(getattr(entry, attribute))
                 except BaseException:
                     item[attribute] = None
+                item["domain"] = domain
             data.append(item)
         return data
 
-    def format(self, entry) -> dict:
+    def format(self, entry:dict) -> dict:
         """Compiles all entry data into a message text"""
-        link = entry['link']
         try:
-            content = entry["content"][0]["value"].replace("!doctype html>", "")
-            content_text, img_src, caption = self.get_citizen_content(content)
-            telegraph_url = self.to_telegraph(title=entry["title"], html_string=content)
-            link = telegraph_url
+            entry = self.get_citizen_content(entry)
         except BaseException:
-            content_text, img_src, caption = None, None, None
+            pass
         tags = entry["tags"]
+        img_src = entry.get("img_src")
+        caption = entry.get("caption")
+        telegraph_url = entry.get("telegraph_url")
         author = entry["author"]
         published = entry["published"]
         updated = entry["updated"]
@@ -85,33 +88,25 @@ class RSSPoster():
             f'#{tag["term"].strip(string.punctuation.replace(" ", ""))}' for tag in tags]
         tags = ", ".join(tags)
         author = "" if author is None else f"\n\nArticle written by <b>{author}</b>"
+        link = entry["link"] if telegraph_url is None else telegraph_url
         published = f'Published on {updated.split("+")[0].replace("T", " at ")}' if published is None else f'Published on {published}'
-        content_text = "" if content_text is None else content_text
         caption = '' if caption is None else caption
         text = f"<a href='{link}'><b>{entry['title']}</b></a>\n\n{summary}<i>{author}</i>\n\n{published}\n\n<a href='{img_src}'>{caption}</a>"
         message = {"text": text, "url": entry['link']}
         return message
 
-    def get_citizen_content(self, content):
+    def get_citizen_content(self, entry):
         """For links from citizen and formats its data uniquely"""
+        content = entry["content"][0]["value"].replace("&lt;!doctype html>", "")
         soup = BeautifulSoup(content, "html.parser")
-        p = soup.find_all("p")
-        div = soup.find_all("div")
         img_tag = soup.find('img')
         img_src = img_tag['src'] if img_tag else None
         caption = soup.find('figcaption').text
-        content_text = ""
-        for paragraph in p:
-            spans = paragraph.find_all("span", class_="tg-spoiler")
-            if spans:
-                for span in spans:
-                    content_text += '\n' + span.text + '\n'
-            else:
-                content_text += '\n' + paragraph.text.strip().replace("\n", " ") + '\n'
-        if content_text == "":
-            for paragraph in div:
-                content_text += paragraph.text
-        return content_text, img_src, caption
+        telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
+        entry["telegraph_url"] = telegraph_url
+        entry["img_src"] = img_src
+        entry["caption"] = caption
+        return entry
 
     def get_messages(self, url: dict) -> list:
         """Gets all the messages to be sent from a feed"""
@@ -137,8 +132,7 @@ class RSSPoster():
 
 # Parse HTML
 
-    def to_telegraph(self, html_string, title):
-        soup = BeautifulSoup(html_string, 'html.parser')
+    def to_telegraph(self, soup, title):
 
         # Filter tags
         self.filter_tags(soup)

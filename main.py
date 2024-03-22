@@ -16,7 +16,7 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = "5954527089:AAHQJGcyGaI_MfT6DsoEgmKicfjBujizCbA"
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
@@ -74,6 +74,13 @@ def update(message=None):
                     except Exception as e:
                         if "429" in str(e):
                             duration = int(e.__str__()[-2:])
+                        try:
+                            bot.edit_message_text(
+                                f"Update paused for {duration}s due to too many messages, for {feed['domain']} will resume shortly...",
+                                message.chat.id,
+                                message.id)
+                        except Exception as e:
+                            pass
                         logger.error(
                             f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
                         time.sleep(duration)
