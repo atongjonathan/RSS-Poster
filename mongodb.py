@@ -11,7 +11,7 @@ class Database():
         self.json_data = self.db.get_collection("json_data")
     
     def insert_json_data(self, message):
-        existing_message = self.json_data.find_one(message)
+        existing_message = self.json_data.find_one({"url":message["url"]})
         if existing_message:
             raise DuplicateKeyError("Message Already Exists")
         else:
