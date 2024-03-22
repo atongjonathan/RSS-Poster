@@ -36,6 +36,7 @@ class RSSPoster():
     def extract_data(self, feed_url: str):
         """Extracts data from rss url"""
         parser = feedparser.parse(feed_url)
+        domain = self.get_domain_from_url(feed_url)
         entries = parser.entries
         data = []
         attributes = [
@@ -55,6 +56,7 @@ class RSSPoster():
                     item[attribute] = html.unescape(getattr(entry, attribute))
                 except BaseException:
                     item[attribute] = None
+                item["domain"] = domain
             data.append(item)
         return data
 
