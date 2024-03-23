@@ -5,12 +5,14 @@ import string
 from logging import getLogger
 import json
 from telegraph import Telegraph
+from mongodb import Database
 
 
 class RSSPoster():
     def __init__(self):
         self.FEEDS = self.get_feeds()
         self.logger = getLogger(__name__)
+        self.database = Database()
 
     def get_feeds(self) -> list:
         """Gets feeds from config.json and adding domain key with value to it"""
@@ -102,11 +104,14 @@ class RSSPoster():
         img_tag = soup.find('img')
         img_src = img_tag['src'] if img_tag else None
         caption = soup.find('figcaption').text
-        telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
-        entry["telegraph_url"] = telegraph_url
+        existing = self.database.json_data.find_one({"url":entry["link"]})
+        if existing == None:
+            telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
+            entry["telegraph_url"] = telegraph_url
+            print(entry["link"])
         entry["img_src"] = img_src
         entry["caption"] = caption
-        return entry
+        return entry    
 
     def get_messages(self, url: dict) -> list:
         """Gets all the messages to be sent from a feed"""
