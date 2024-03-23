@@ -79,9 +79,8 @@ def update(message=None):
                                 f"Update paused for {duration}s due to too many messages, for {feed['domain']} will resume shortly...",
                                 message.chat.id,
                                 message.id)
-                        except Exception as e:
-                            pass
-                        logger.error(
+                        except Exception as e:                            
+                            logger.error(
                             f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
                         time.sleep(duration)
             no_of_links += 1
