@@ -119,7 +119,7 @@ class RSSPoster():
         messages = [self.format(entry) for entry in entries]
         return messages
 
-    def filter_tags(self, soup):
+    def filter_tags(self, soup:BeautifulSoup):
         allowed_tags = ['a', 'blockquote', 'br', 'em',
                         'figure', 'h3', 'h4', 'img', 'p', 'strong']
 
@@ -127,17 +127,11 @@ class RSSPoster():
             if tag.name not in allowed_tags:
                 tag.name = 'p'  # Change disallowed tags to 'p' tag
 
-        # Allow embedded youtube and vimeo iframe tags
-        for iframe in soup.find_all('iframe'):
-            if 'youtube.com' in iframe.get('src') or 'vimeo.com' in iframe.get('src'):
-                iframe.unwrap()
-            else:
-                iframe.decompose()
 
 
 # Parse HTML
 
-    def to_telegraph(self, soup, title):
+    def to_telegraph(self, soup:BeautifulSoup, title):
 
         # Filter tags
         self.filter_tags(soup)
