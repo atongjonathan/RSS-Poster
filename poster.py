@@ -108,7 +108,6 @@ class RSSPoster():
         if existing == None:
             telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
             entry["telegraph_url"] = telegraph_url
-            print(entry["link"])
         entry["img_src"] = img_src
         entry["caption"] = caption
         return entry    
