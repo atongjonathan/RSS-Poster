@@ -28,7 +28,7 @@ class RSSPoster():
             # Split the URL by "//" and take the second part
             url = url.replace("www.", "")
             domain = url.split("//")[1].split("/")[0]
-            if ".com" in url:                
+            if ".com" in url:
                 return domain.replace(".com", "").split(".")[0]
             return domain.replace(".co", "").split(".")[0]
         except Exception as e:
@@ -62,12 +62,14 @@ class RSSPoster():
             data.append(item)
         return data
 
-    def format(self, entry:dict) -> dict:
+    def format(self, entry: dict) -> dict:
         """Compiles all entry data into a message text"""
         try:
             entry = self.get_citizen_content(entry)
         except BaseException:
             pass
+        if entry.get("domain") == "anitrendz":
+            self.get_telegraph_link(entry)
         tags = entry["tags"]
         img_src = entry.get("img_src")
         caption = entry.get("caption")
@@ -97,20 +99,28 @@ class RSSPoster():
         message = {"text": text, "url": entry['link']}
         return message
 
-    def get_citizen_content(self, entry):
-        """For links from citizen and formats its data uniquely"""
-        content = entry["content"][0]["value"].replace("&lt;!doctype html>", "")
-        soup = BeautifulSoup(content, "html.parser")
-        img_tag = soup.find('img')
-        img_src = img_tag['src'] if img_tag else None
-        caption = soup.find('figcaption').text
-        existing = self.database.json_data.find_one({"url":entry["link"]})
+    def get_telegraph_link(self, entry, soup=None):
+        if soup is None:
+            content = entry["content"][0]["value"].replace(
+                "&lt;!doctype html>", "")
+            soup = BeautifulSoup(content, "html.parser")
+        existing = self.database.json_data.find_one({"url": entry["link"]})
         if existing == None:
             telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
             entry["telegraph_url"] = telegraph_url
+
+    def get_citizen_content(self, entry):
+        content = entry["content"][0]["value"].replace(
+            "&lt;!doctype html>", "")
+        soup = BeautifulSoup(content, "html.parser")
+        """For links from citizen and formats its data uniquely"""
+        img_tag = soup.find('img')
+        img_src = img_tag['src'] if img_tag else None
+        caption = soup.find('figcaption').text
+        self.get_telegraph_link(entry, soup)
         entry["img_src"] = img_src
         entry["caption"] = caption
-        return entry    
+        return entry
 
     def get_messages(self, url: dict) -> list:
         """Gets all the messages to be sent from a feed"""
@@ -118,7 +128,7 @@ class RSSPoster():
         messages = [self.format(entry) for entry in entries]
         return messages
 
-    def filter_tags(self, soup:BeautifulSoup):
+    def filter_tags(self, soup: BeautifulSoup):
         allowed_tags = ['a', 'blockquote', 'br', 'em',
                         'figure', 'h3', 'h4', 'img', 'p', 'strong']
 
@@ -127,10 +137,9 @@ class RSSPoster():
                 tag.name = 'p'  # Change disallowed tags to 'p' tag
 
 
-
 # Parse HTML
 
-    def to_telegraph(self, soup:BeautifulSoup, title):
+    def to_telegraph(self, soup: BeautifulSoup, title):
 
         # Filter tags
         self.filter_tags(soup)
