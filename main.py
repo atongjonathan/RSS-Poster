@@ -3,7 +3,7 @@ from telebot import util, types
 import time
 from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
-from mongodb import Database
+from database import Database
 import os
 
 # from db import *
@@ -45,56 +45,72 @@ def hello(message):
 
 @bot.message_handler(commands=["update"])
 def update(message=None):
-    message = bot.reply_to(message, "Updating channels ⏳...")
-    feeds = poster.FEEDS
-    no_of_links = 0
-    for feed in feeds:
-        bot.edit_message_text(
-            f"Updating {feed['domain']}... ",
-            message.chat.id,
-            message.id)
-        messages = poster.get_messages(feed.get("url"))
-        for item in messages:
-            markup = types.InlineKeyboardMarkup()
-            button = types.InlineKeyboardButton("Read More", url=item["url"])
-            markup.add(button)
-            try:
-                db.insert_json_data(item)
-            except:
-                continue
-            try:
-                bot.send_message(
-                    feed["chat_id"], item["text"], reply_markup=markup)
-            except Exception as e:
-                messages = util.smart_split(item['text'])
-                for split_message in messages:
-                    try:
-                        bot.send_message(
-                            feed["chat_id"], text=split_message, reply_markup=markup)
-                    except Exception as e:
-                        if "429" in str(e):
-                            duration = int(e.__str__()[-2:])
-                        try:
-                            bot.edit_message_text(
-                                f"Update paused for {duration}s due to too many messages, for {feed['domain']} will resume shortly...",
-                                message.chat.id,
-                                message.id)
-                        except Exception as e:                            
-                            logger.error(
-                            f"An error occured when sending smart split :'{e}'\n Sleep in {duration}")
-                        time.sleep(duration)
-            no_of_links += 1
+    command = message.text
+    queries = command.split(" ")[1:]
+    domains = [feed["domain"] for feed in poster.FEEDS]
+    if len(queries) > 0:
+        for query in queries:
+            if query.title() in domains:
+                logger.info(f"{query} found in domains")
+                for feed in poster.FEEDS:
+                    if query.title() == feed["domain"]:
+                        send_messages(feed, message)
+            else:
+                domains_txt = "\n".join(domains)
+                bot.reply_to(
+                    message, f"Channel {query} does not exist we have: \n{domains_txt}")
+    else:
+        logger.info("Updating all channels")
+        message = bot.reply_to(message, "Updating all channels ⏳...")
+        feeds = poster.FEEDS
+        total_links = 0
+        for feed in feeds:
+            sent_links = send_messages(feed, message)
+            total_links += sent_links
+        bot.delete_message(message.chat.id, message_id=message.message_id)
+        bot.send_message(
+            message.chat.id, f"Updates done.✅\nLinks sent {total_links}")
 
-        bot.edit_message_text(
-            f"Completed updating {feed['domain']}",
-            message.chat.id,
-            message.id)
+
+def send_messages(feed: dict, message):
+    logger.info(f"Sending messages for {feed['domain']}")
+    send_msg = bot.reply_to(message, f"Updating {feed['domain']} ⏳...")
+    no_of_links = 0
+    messages = poster.get_messages(feed.get("url"))
+    for item in messages:
+        markup = types.InlineKeyboardMarkup()
+        button = types.InlineKeyboardButton("Read More", url=item["url"])
+        markup.add(button)
+        try:
+            db.insert_json_data(item)
+        except:
+            continue
+        try:
+            bot.send_message(
+                feed["chat_id"], item["text"], reply_markup=markup)
+        except Exception as e:
+            messages = util.smart_split(item['text'])
+            for split_message in messages:
+                try:
+                    bot.send_message(
+                        feed["chat_id"], text=split_message, reply_markup=markup)
+                except Exception as e:
+                    if "429" in str(e):
+                        duration = int(e.__str__()[-2:])
+                    try:
+                        paused_msg = bot.send_message(
+                            message.chat.id, f"Updates paused due to too many messages for {feed['domain']} resuming in {duration}s.")
+                        time.sleep(duration)
+                        bot.delete_message(paused_msg, paused_msg.message_id)
+                    except Exception as e:
+                        logger.error(
+                            f"'{e}'\n Sleeping for {duration} seconds")
+
+        no_of_links += 1
 
     bot.edit_message_text(
-        f"Finished update. Links sent: {no_of_links} ✅",
-        message.chat.id,
-        message.id)
-    no_of_links = 0
+        f"Completed updating {feed['domain']}✅,\nLinks sent {no_of_links}", send_msg.chat.id, send_msg.id)
+    return no_of_links
 
 
 if __name__ == "__main__":

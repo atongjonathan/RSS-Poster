@@ -5,7 +5,7 @@ import string
 from logging import getLogger
 import json
 from telegraph import Telegraph
-from mongodb import Database
+from database import Database
 
 
 class RSSPoster():
@@ -138,6 +138,7 @@ class RSSPoster():
 
 
 # Parse HTML
+
 
     def to_telegraph(self, soup: BeautifulSoup, title):
 
