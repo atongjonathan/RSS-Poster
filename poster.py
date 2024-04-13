@@ -68,8 +68,6 @@ class RSSPoster():
             entry = self.get_citizen_content(entry)
         except BaseException:
             pass
-        if entry.get("domain") == "anitrendz":
-            self.get_telegraph_link(entry)
         tags = entry["tags"]
         img_src = entry.get("img_src")
         caption = entry.get("caption")
