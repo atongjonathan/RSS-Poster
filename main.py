@@ -1,5 +1,4 @@
-import telebot
-from telebot import util, types
+from telebot import util, types, TeleBot
 import time
 from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
@@ -17,7 +16,7 @@ basicConfig(
 logger = getLogger(__name__)
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
+bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 
 poster = RSSPoster()
 db = Database()
@@ -44,7 +43,7 @@ def hello(message):
 
 
 @bot.message_handler(commands=["update"])
-def update(message=None):
+def update(message):
     command = message.text
     queries = command.split(" ")[1:]
     domains = [feed["domain"] for feed in poster.FEEDS]
@@ -72,9 +71,13 @@ def update(message=None):
             message.chat.id, f"Updates done.✅\nLinks sent {total_links}")
 
 
-def send_messages(feed: dict, message):
+def send_messages(feed: dict, message: types.Message):
     logger.info(f"Sending messages for {feed['domain']}")
-    send_msg = bot.reply_to(message, f"Updating {feed['domain']} ⏳...")
+    try:
+        bot.edit_message_text(
+        f"Updating {feed['domain']} ⏳...", message.chat.id, message.message_id)
+    except Exception:
+        message = bot.send_message(message.chat.id, f"Updating {feed['domain']} ⏳...")
     no_of_links = 0
     messages = poster.get_messages(feed.get("url"))
     for item in messages:
@@ -101,7 +104,8 @@ def send_messages(feed: dict, message):
                         paused_msg = bot.send_message(
                             message.chat.id, f"Updates paused due to too many messages for {feed['domain']} resuming in {duration}s.")
                         time.sleep(duration)
-                        bot.delete_message(paused_msg, paused_msg.message_id)
+                        bot.delete_message(
+                            message.chat.id, paused_msg, paused_msg.message_id)
                     except Exception as e:
                         logger.error(
                             f"'{e}'\n Sleeping for {duration} seconds")
@@ -109,7 +113,7 @@ def send_messages(feed: dict, message):
         no_of_links += 1
 
     bot.edit_message_text(
-        f"Completed updating {feed['domain']}✅,\nLinks sent {no_of_links}", send_msg.chat.id, send_msg.id)
+        f"Completed updating {feed['domain']}✅,\nLinks sent {no_of_links}", message.chat.id, message.message_id)
     return no_of_links
 
 

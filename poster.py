@@ -103,7 +103,7 @@ class RSSPoster():
                 "&lt;!doctype html>", "")
             soup = BeautifulSoup(content, "html.parser")
         existing = self.database.json_data.find_one({"url": entry["link"]})
-        if existing == None:
+        if existing == None and "citizen" in entry["link"]:
             telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
             entry["telegraph_url"] = telegraph_url
 
@@ -120,7 +120,7 @@ class RSSPoster():
         entry["caption"] = caption
         return entry
 
-    def get_messages(self, url: dict) -> list:
+    def get_messages(self, url: str) -> list:
         """Gets all the messages to be sent from a feed"""
         entries = self.extract_data(url)
         messages = [self.format(entry) for entry in entries]
