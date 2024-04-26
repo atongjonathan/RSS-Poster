@@ -4,6 +4,7 @@ from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
 from database import Database
 import os
+from keep_alive import keep_alive
 
 # from db import *
 
@@ -119,4 +120,5 @@ def send_messages(feed: dict, message: types.Message):
 
 if __name__ == "__main__":
     logger.info("Bot online")
+    keep_alive()
     bot.polling()
