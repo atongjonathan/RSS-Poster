@@ -6,6 +6,8 @@ from logging import getLogger
 import json
 from telegraph import Telegraph
 from database import Database
+import subprocess
+import json
 
 
 class RSSPoster():
@@ -64,10 +66,11 @@ class RSSPoster():
 
     def format(self, entry: dict) -> dict:
         """Compiles all entry data into a message text"""
-        try:
+        domain =  self.get_domain_from_url(entry["link"])
+        if "citizen" == domain:
             entry = self.get_citizen_content(entry)
-        except BaseException:
-            pass
+        elif "pitchfork" == domain:
+            entry = self.pitchfork(entry)
         tags = entry["tags"]
         img_src = entry.get("img_src")
         caption = entry.get("caption")
@@ -128,15 +131,11 @@ class RSSPoster():
 
     def filter_tags(self, soup: BeautifulSoup):
         allowed_tags = ['a', 'blockquote', 'br', 'em',
-                        'figure', 'h3', 'h4', 'img', 'p', 'strong']
+                        'figure', 'h3', 'h4', 'img', 'p', 'strong', 'iframe']
 
         for tag in soup.find_all(True):
             if tag.name not in allowed_tags:
                 tag.name = 'p'  # Change disallowed tags to 'p' tag
-
-
-# Parse HTML
-
 
     def to_telegraph(self, soup: BeautifulSoup, title):
 
@@ -146,8 +145,59 @@ class RSSPoster():
         # Get the filtered HTML string
         filtered_html_string = str(soup)
 
-        telegraph = Telegraph()
-        telegraph.create_account(short_name="citizen")
+        telegraph = Telegraph(access_token="bc34e424e13687b0877b6d0fdbbbdf895387754a44d63a1f0ed1529b2532")
+        # account = telegraph.create_account(short_name="sg_")
+        # print(account)
+        # telegraph = Telegraph(access_token=account.get("access_token"))
         response = telegraph.create_page(
             title, html_content=filtered_html_string)
         return response["url"]
+
+    def pitchfork(self, entry):
+        url = entry["link"]
+        existing = self.database.json_data.find_one({"url": url})
+        if  existing == None:
+            command = f"scrapy fetch {url} > temp.html"
+            subprocess.run(command, shell=True)
+            with open("temp.html", encoding="utf-8") as file:
+                data = file.read()
+            soup = BeautifulSoup(data, "html.parser")
+            context = soup.find(attrs={"type":"application/ld+json"}).text.replace("@", "") 
+            iframes = soup.find_all("iframe")
+            try: 
+                youtube_iframe = [iframe["src"] for iframe in iframes if "youtube" in iframe["src"]][0]
+                vid = youtube_iframe.split("/")[-1]
+                iframe_element = f"""<figure><iframe src="/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D{vid}"></iframe></figure>"""
+            except Exception:
+                iframe_element = ""                          
+            content = json.loads(context)
+            image_element = f"""<a href='{content.get("thumbnailUrl")}'>Pitchfork</a>"""
+            body =  [value for key,value in content.items() if "Body" in key][0]
+            html_content = image_element + f"<p>{body}</p>" + iframe_element
+            telegraph = Telegraph()
+
+            acc = telegraph.create_account(short_name='1337')
+
+            response = telegraph.create_page(
+                content.get("headline"),
+                html_content=html_content,
+
+            )
+            entry = {
+                "summary":content.get("description"),
+                "updated":content.get("dateModified"),
+                "published":content.get("datePublished"),
+                "author":content.get("author")[0]["name"],
+                "telegraph_url":response.get("url"),
+                "title":content.get("headline"),
+                "img_src":content.get("thumbnailUrl"),
+                "tags": [{"term": tag} for tag in content.get("keywords")],
+                "description":content.get("description"),
+                "caption":"Pitchfork",
+                "link":url
+            }
+            return entry
+        return entry
+
+# poster = RSSPoster()
+# print(poster.pitchfork(url="https://pitchfork.com/reviews/tracks/porter-robinson-knock-yourself-out-xd"))
