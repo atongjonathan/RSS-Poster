@@ -171,7 +171,7 @@ class RSSPoster():
             except Exception:
                 iframe_element = ""                          
             content = json.loads(context)
-            image_element = f"""<a href='{content.get("thumbnailUrl")}'>Pitchfork</a>"""
+            image_element = f"""<img src="{content.get("thumbnailUrl")}" alt="thumbnail">Pitchfork</img>"""
             body =  [value for key,value in content.items() if "Body" in key][0]
             html_content = image_element + f"<p>{body}</p>" + iframe_element
             telegraph = Telegraph()
