@@ -8,6 +8,7 @@ from telegraph import Telegraph
 from database import Database
 import subprocess
 import json
+import time
 
 
 class RSSPoster():
@@ -108,6 +109,7 @@ class RSSPoster():
         existing = self.database.json_data.find_one({"url": entry["link"]})
         if existing == None and "citizen" in entry["link"]:
             telegraph_url = self.to_telegraph(title=entry["title"], soup=soup)
+            time.sleep(2)
             entry["telegraph_url"] = telegraph_url
 
     def get_citizen_content(self, entry):
