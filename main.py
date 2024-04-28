@@ -121,4 +121,4 @@ def send_messages(feed: dict, message: types.Message):
 if __name__ == "__main__":
     logger.info("Bot online")
     keep_alive()
-    bot.polling()
+    bot.infinity_polling()
