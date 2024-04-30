@@ -106,7 +106,7 @@ def send_messages(feed: dict, message: types.Message):
                             message.chat.id, f"Updates paused due to too many messages for {feed['domain']} resuming in {duration}s.")
                         time.sleep(duration)
                         bot.delete_message(
-                            message.chat.id, paused_msg, paused_msg.message_id)
+                            message.chat.id, paused_msg.message_id)
                     except Exception as e:
                         logger.error(
                             f"'{e}'\n Sleeping for {duration} seconds")
