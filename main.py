@@ -60,25 +60,31 @@ def update(message):
                 bot.reply_to(
                     message, f"Channel {query} does not exist we have: \n{domains_txt}")
     else:
-        logger.info("Updating all channels")
-        message = bot.reply_to(message, "Updating all channels ⏳...")
-        feeds = poster.FEEDS
-        total_links = 0
-        for feed in feeds:
-            sent_links = send_messages(feed, message)
-            total_links += sent_links
-        bot.delete_message(message.chat.id, message_id=message.message_id)
-        bot.send_message(
-            message.chat.id, f"Updates done.✅\nLinks sent {total_links}")
+        update_all()
+
+
+def update_all():
+    OWNER_ID = os.environ.get("OWNER_ID")
+    logger.info("Updating all channels")
+    message = bot.send_message(OWNER_ID, "Updating all channels ⏳...")
+    feeds = poster.FEEDS
+    total_links = 0
+    for feed in feeds:
+        sent_links = send_messages(feed, message)
+        total_links += sent_links
+    bot.delete_message(message.chat.id, message_id=message.message_id)
+    bot.send_message(
+        message.chat.id, f"Updates done.✅\nLinks sent {total_links}")
 
 
 def send_messages(feed: dict, message: types.Message):
     logger.info(f"Sending messages for {feed['domain']}")
     try:
         bot.edit_message_text(
-        f"Updating {feed['domain']} ⏳...", message.chat.id, message.message_id)
+            f"Updating {feed['domain']} ⏳...", message.chat.id, message.message_id)
     except Exception:
-        message = bot.send_message(message.chat.id, f"Updating {feed['domain']} ⏳...")
+        message = bot.send_message(
+            message.chat.id, f"Updating {feed['domain']} ⏳...")
     no_of_links = 0
     messages = poster.get_messages(feed.get("url"))
     for item in messages:
@@ -120,5 +126,5 @@ def send_messages(feed: dict, message: types.Message):
 
 if __name__ == "__main__":
     logger.info("Bot online")
-    keep_alive()
+    keep_alive(update_all)
     bot.infinity_polling()
