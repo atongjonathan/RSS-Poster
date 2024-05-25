@@ -3,8 +3,9 @@ name: Run main.py
 on:
   schedule:
     - cron: '0 0,6,12,18 * * *' # Every 6 hours
-  branches:
-    - workflows
+  push:
+    branches:
+      - workflows
 
 jobs:
   build:
@@ -28,5 +29,4 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          OWNER_ID: ${{ secrets.OWNER_ID }}
         run: python main.py
