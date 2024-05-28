@@ -2,7 +2,7 @@ name: Run main.py
 
 on:
   schedule:
-    - cron: '0 0,6,12,18 * * *' # Runs every 6 hours
+    - cron: '0 3,9,15,21 * * *' # Runs every 6 hours
   push:
     branches:
       - workflows # Triggers on pushes to the workflows branch
