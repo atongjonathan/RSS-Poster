@@ -1,35 +1,35 @@
-# name: Run main.py
+name: Run main.py
 
-# on:
-#   schedule:
-#     - cron: '0 3,9,15,21 * * *' # Runs every 6 hours
-#   push:
-#     branches:
-#       - workflows # Triggers on pushes to the workflows branch
+on:
+  schedule:
+    - cron: '0 3,9,15,21 * * *' # Runs every 6 hours
+  push:
+    branches:
+      - workflows # Triggers on pushes to the workflows branch
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout repository content
-#         uses: actions/checkout@v3 # Checkout the latest version of the code
-#         with:
-#           ref: workflows # Ensure the workflows branch is checked out
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v3 # Checkout the latest version of the code
+        with:
+          ref: workflows # Ensure the workflows branch is checked out
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.9' # Set up Python 3.9
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Set up Python 3.9
 
-#       - name: Install Python packages
-#         run: |
-#           python -m pip install --upgrade pip # Upgrade pip
-#           pip install -r requirements.txt # Install dependencies
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip # Upgrade pip
+          pip install -r requirements.txt # Install dependencies
 
-#       - name: Execute Python script
-#         env:
-#           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }} # Environment variable for Telegram Bot Token
-#           DATABASE_URL: ${{ secrets.DATABASE_URL }} # Environment variable for Database URL
-#           OWNER_ID: ${{ secrets.OWNER_ID }} # Environment variable for Database URL
-#         run: python main.py # Run the main Python script
+      - name: Execute Python script
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }} # Environment variable for Telegram Bot Token
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} # Environment variable for Database URL
+          OWNER_ID: ${{ secrets.OWNER_ID }} # Environment variable for Database URL
+        run: python main.py # Run the main Python script
