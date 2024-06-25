@@ -80,6 +80,7 @@ def send_messages(feed: dict, message: types.Message):
     except Exception:
         message = bot.send_message(message.chat.id, f"Updating {feed['domain']} ⏳...")
     no_of_links = 0
+    duration = 0
     messages = poster.get_messages(feed.get("url"))
     for item in messages:
         markup = types.InlineKeyboardMarkup()
