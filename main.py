@@ -4,8 +4,10 @@ from logging import getLogger, basicConfig, INFO, StreamHandler, FileHandler
 from poster import RSSPoster
 from database import Database
 import os
-from keep_alive import keep_alive
+# from keep_alive import keep_alive
+from dotenv import load_dotenv
 
+load_dotenv("config.env")
 # from db import *
 
 basicConfig(
@@ -16,9 +18,8 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
-
 poster = RSSPoster()
 db = Database()
 

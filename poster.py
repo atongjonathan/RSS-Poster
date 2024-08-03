@@ -9,6 +9,7 @@ from database import Database
 import subprocess
 import json
 import time
+import os
 
 
 class RSSPoster():
@@ -67,7 +68,7 @@ class RSSPoster():
 
     def format(self, entry: dict) -> dict:
         """Compiles all entry data into a message text"""
-        domain =  self.get_domain_from_url(entry["link"])
+        domain = self.get_domain_from_url(entry["link"])
         if "citizen" == domain:
             entry = self.get_citizen_content(entry)
         elif "pitchfork" == domain:
@@ -128,7 +129,14 @@ class RSSPoster():
     def get_messages(self, url: str) -> list:
         """Gets all the messages to be sent from a feed"""
         entries = self.extract_data(url)
-        messages = [self.format(entry) for entry in entries]
+        messages = []
+        for entry in entries:
+            try:
+                entry = self.format(entry)
+            except Exception as e:
+                self.logger.error(
+                    f"Formating failed\nError: {e}\nEntry:{entry}")
+                continue
         return messages
 
     def filter_tags(self, soup: BeautifulSoup):
@@ -147,9 +155,9 @@ class RSSPoster():
         # Get the filtered HTML string
         filtered_html_string = str(soup)
 
-        telegraph = Telegraph(access_token="bc34e424e13687b0877b6d0fdbbbdf895387754a44d63a1f0ed1529b2532")
-        # account = telegraph.create_account(short_name="sg_")
-        # print(account)
+        telegraph = Telegraph(
+            access_token=os.environ.get("TELEGRAPH_TOKEN"))
+        # account = telegraph.create_account(short_name="")
         # telegraph = Telegraph(access_token=account.get("access_token"))
         response = telegraph.create_page(
             title, html_content=filtered_html_string)
@@ -158,23 +166,25 @@ class RSSPoster():
     def pitchfork(self, entry):
         url = entry["link"]
         existing = self.database.json_data.find_one({"url": url})
-        if  existing == None:
+        if existing == None:
             command = f"scrapy fetch {url} > temp.html"
             subprocess.run(command, shell=True)
             with open("temp.html", encoding="utf-8") as file:
                 data = file.read()
             soup = BeautifulSoup(data, "html.parser")
-            context = soup.find(attrs={"type":"application/ld+json"}).text.replace("@", "") 
+            context = soup.find(
+                attrs={"type": "application/ld+json"}).text.replace("@", "")
             iframes = soup.find_all("iframe")
-            try: 
-                youtube_iframe = [iframe["src"] for iframe in iframes if "youtube" in iframe["src"]][0]
+            try:
+                youtube_iframe = [iframe["src"]
+                                  for iframe in iframes if "youtube" in iframe["src"]][0]
                 vid = youtube_iframe.split("/")[-1]
                 iframe_element = f"""<figure><iframe src="/embed/youtube?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D{vid}"></iframe></figure>"""
             except Exception:
-                iframe_element = ""                          
+                iframe_element = ""
             content = json.loads(context)
             image_element = f"""<img src="{content.get("thumbnailUrl")}" alt="thumbnail">Pitchfork</img>"""
-            body =  [value for key,value in content.items() if "Body" in key][0]
+            body = [value for key, value in content.items() if "Body" in key][0]
             html_content = image_element + f"<p>{body}</p>" + iframe_element
             telegraph = Telegraph()
 
@@ -186,17 +196,17 @@ class RSSPoster():
 
             )
             entry = {
-                "summary":content.get("description"),
-                "updated":content.get("dateModified"),
-                "published":content.get("datePublished"),
-                "author":content.get("author")[0]["name"],
-                "telegraph_url":response.get("url"),
-                "title":content.get("headline"),
-                "img_src":content.get("thumbnailUrl"),
+                "summary": content.get("description"),
+                "updated": content.get("dateModified"),
+                "published": content.get("datePublished"),
+                "author": content.get("author")[0]["name"],
+                "telegraph_url": response.get("url"),
+                "title": content.get("headline"),
+                "img_src": content.get("thumbnailUrl"),
                 "tags": [{"term": tag} for tag in content.get("keywords")],
-                "description":content.get("description"),
-                "caption":"Pitchfork",
-                "link":url
+                "description": content.get("description"),
+                "caption": "Pitchfork",
+                "link": url
             }
             return entry
         return entry
