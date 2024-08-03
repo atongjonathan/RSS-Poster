@@ -29,7 +29,8 @@ jobs:
 
       - name: Execute Python script
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }} # Environment variable for Telegram Bot Token
+          TELEGRAM_BOT_TOKEN: ${{ secrets.BOT_TOKEN }} # Environment variable for Telegram Bot Token
           DATABASE_URL: ${{ secrets.DATABASE_URL }} # Environment variable for Database URL
           OWNER_ID: ${{ secrets.OWNER_ID }} # Environment variable for Database URL
+          TELEGRAPH_TOKEN: ${{ secrets.TELEGRAPH_TOKEN }} # Environment variable for Database URL
         run: python main.py # Run the main Python script
