@@ -18,9 +18,8 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
-
 poster = RSSPoster()
 db = Database()
 
@@ -83,9 +82,10 @@ def send_messages(feed: dict, message: types.Message):
     logger.info(f"Sending messages for {feed['domain']}")
     try:
         bot.edit_message_text(
-        f"Updating {feed['domain']} ⏳...", message.chat.id, message.message_id)
+            f"Updating {feed['domain']} ⏳...", message.chat.id, message.message_id)
     except Exception:
-        message = bot.send_message(message.chat.id, f"Updating {feed['domain']} ⏳...")
+        message = bot.send_message(
+            message.chat.id, f"Updating {feed['domain']} ⏳...")
     no_of_links = 0
     duration = 0
     messages = poster.get_messages(feed.get("url"))
