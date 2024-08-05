@@ -18,7 +18,7 @@ basicConfig(
     level=INFO)
 logger = getLogger(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ.get("BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 bot = TeleBot(TELEGRAM_BOT_TOKEN, parse_mode="HTML")
 poster = RSSPoster()
 db = Database()
