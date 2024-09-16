@@ -5,7 +5,7 @@ on:
     - cron: '0 3,9,15,21 * * *' # Runs every 6 hours
   push:
     branches:
-      - workflows # Triggers on pushes to the workflows branch
+      - master # Triggers on pushes to the workflows branch
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3 # Checkout the latest version of the code
         with:
-          ref: workflows # Ensure the workflows branch is checked out
+          ref: master # Ensure the workflows branch is checked out
 
       - name: Set up Python
         uses: actions/setup-python@v4
