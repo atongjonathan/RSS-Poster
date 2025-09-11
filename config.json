@@ -2,5 +2,9 @@
     {
         "chat_id": -1001908193905,
         "url": "https://citizen.digital/feed.xml"
+    },
+    {
+        "chat_id": -1003036429576,
+        "url": "https://www.desiringgod.org/blog.rss"
     }
 ]
