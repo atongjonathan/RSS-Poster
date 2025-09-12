@@ -3,6 +3,6 @@ venv
 /db
 logs.txt
 channel_links.db
-config.env
+*.env*
 tests.py
 temp.html
