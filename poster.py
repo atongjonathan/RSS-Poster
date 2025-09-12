@@ -1,3 +1,5 @@
+import re
+from urllib import request
 import feedparser
 from bs4 import BeautifulSoup
 import html
@@ -10,6 +12,7 @@ from database import Database
 import subprocess
 import json
 import time
+import requests
 
 
 class RSSPoster():
@@ -27,16 +30,45 @@ class RSSPoster():
         return FEEDS
 
     def get_domain_from_url(self, url: str) -> str:
-        """Gets the domain given a url"""
+        """
+        Gets the domain given a URL, properly handling subdomains
+        
+        Args:
+            url (str): The URL to parse
+            
+        Returns:
+            str: The main domain name without TLD
+        """
         try:
-            # Split the URL by "//" and take the second part
-            url = url.replace("www.", "")
-            domain = url.split("//")[1].split("/")[0]
-            if ".com" in url:
-                return domain.replace(".com", "").split(".")[0]
-            return domain.replace(".co", "").split(".")[0]
+            # Remove protocol and www if present
+            url = url.lower().replace("www.", "")
+            if "//" in url:
+                url = url.split("//")[1]
+                
+            # Get domain part before any path
+            domain_part = url.split("/")[0]
+            
+            # Split domain into parts
+            parts = domain_part.split(".")
+            
+            # Handle common TLDs
+            tlds = {".com", ".org", ".net", ".edu", ".gov", ".co", ".io"}
+            
+            # Remove TLD
+            if any(tld in domain_part for tld in tlds):
+                # Handle special cases like .co.uk
+                if ".co." in domain_part:
+                    parts = parts[:-2]
+                else:
+                    parts = parts[:-1]
+                    
+            # Get main domain (last part if subdomain exists)
+            main_domain = parts[-1]
+            
+            return main_domain
+            
         except Exception as e:
-            self.logger.error(f"Error {e} extracting from {url}:")
+            self.logger.error(f"Error {e} extracting domain from {url}")
             return None
 
     def extract_data(self, feed_url: str):
@@ -69,10 +101,12 @@ class RSSPoster():
     def format(self, entry: dict) -> dict:
         """Compiles all entry data into a message text"""        
         domain =  self.get_domain_from_url(entry["link"])
-        if "citizen" == domain:
+        if "digital" == domain:
             entry = self.get_citizen_content(entry)
         elif "pitchfork" == domain:
             entry = self.pitchfork(entry)
+        elif "desiringgod" == domain:
+            entry = self.get_desiring_god_content(entry)
         tags = entry.get("tags")
         img_src = entry.get("img_src")
         caption = entry.get("caption")
@@ -124,6 +158,11 @@ class RSSPoster():
         self.get_telegraph_link(entry, soup)
         entry["img_src"] = img_src
         entry["caption"] = caption
+        return entry
+    
+    def get_desiring_god_content(self, entry):
+        response = requests.get(entry["link"])
+        entry["link"] = response.url
         return entry
 
     def get_messages(self, url: str) -> list:
